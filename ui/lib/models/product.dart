@@ -130,32 +130,32 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'],
-      title: json['title'],
+      title: json['name'],
       description: json['description'],
-      price: json['price'].toDouble(),
-      quantity: json['quantity'],
+      price: double.parse(json['price'].toString()),
+      quantity: json['available_quantity'],
       category: Category.fromJson(json['category']),
       seller: User.fromJson(json['seller']),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
-      images: (json['images'] as List<dynamic>)
+      images: (json['images'] as List<dynamic>? ?? [])
           .map((image) => ProductImage.fromJson(image))
           .toList(),
-      specifications: (json['specifications'] as List<dynamic>)
+      specifications: (json['specifications'] as List<dynamic>? ?? [])
           .map((spec) => ProductSpecification.fromJson(spec))
           .toList(),
-      averageRating: json['average_rating']?.toDouble(),
-      reviewCount: json['review_count'],
+      averageRating: json['average_rating']?.toDouble() ?? 0.0,
+      reviewCount: json['review_count'] ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
+      'name': title,
       'description': description,
       'price': price,
-      'quantity': quantity,
+      'available_quantity': quantity,
       'category': category.toJson(),
       'seller': seller.toJson(),
       'created_at': createdAt.toIso8601String(),

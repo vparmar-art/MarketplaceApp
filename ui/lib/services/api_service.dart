@@ -5,23 +5,47 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class ApiService {
+class ApiService extends ChangeNotifier {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
-  ApiService._internal();
+  
+  ApiService._internal() {
+    // Initialization moved to init() to ensure proper async loading
+  }
 
   final String baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000/api/';
   String? _token;
 
-  Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('auth_token');
+  Future<void> _loadToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _token = prefs.getString('auth_token');
+    } catch (e) {
+      // Handle token loading error silently
+    }
   }
+
+  Future<void> init() async {
+    await _loadToken();
+  }
+
+  // Ensure token is loaded before making requests
+  Future<void> ensureInitialized() async {
+    if (_token == null) {
+      await _loadToken();
+    }
+  }
+
+
 
   Future<void> setToken(String token) async {
     _token = token;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> clearToken() async {
@@ -46,8 +70,9 @@ class ApiService {
   // Generic GET request
   Future<dynamic> get(String endpoint) async {
     try {
+      final url = '$baseUrl$endpoint';
       final response = await http.get(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse(url),
         headers: headers,
       );
       return _handleResponse(response);
@@ -164,10 +189,6 @@ class ApiService {
 
   // Handle HTTP errors
   void _handleHttpError(http.Response response) {
-    if (kDebugMode) {
-      print('API Error: ${response.statusCode} - ${response.body}');
-    }
-
     switch (response.statusCode) {
       case 400:
         throw Exception('Bad request: ${response.body}');
@@ -186,27 +207,35 @@ class ApiService {
 
   // Handle general errors
   void _handleError(dynamic error) {
-    if (kDebugMode) {
-      print('API Service Error: $error');
-    }
+    // Handle error silently in production
   }
 
   // Authentication endpoints
   Future<Map<String, dynamic>> login(String username, String password) async {
-    final response = await post('auth/login/', data: {
+    final response = await post('login/', data: {
       'username': username,
       'password': password,
     });
     
+    // Check for different token key names
+    String? token;
     if (response['token'] != null) {
-      await setToken(response['token']);
+      token = response['token'];
+    } else if (response['access'] != null) {
+      token = response['access']; // Alternative token key
+    } else if (response['access_token'] != null) {
+      token = response['access_token']; // Another alternative
+    }
+    
+    if (token != null) {
+      await setToken(token);
     }
     
     return response;
   }
 
   Future<Map<String, dynamic>> register(String username, String email, String password) async {
-    return await post('users/', data: {
+    return await post('register/', data: {
       'username': username,
       'email': email,
       'password': password,
@@ -215,7 +244,7 @@ class ApiService {
 
   Future<void> logout() async {
     try {
-      await post('auth/logout/');
+      await post('logout/');
     } finally {
       await clearToken();
     }
@@ -240,7 +269,7 @@ class ApiService {
   }
 
   // Product endpoints
-  Future<Map<String, dynamic>> getProducts({int? page, String? search, int? categoryId}) async {
+  Future<dynamic> getProducts({int? page, String? search, int? categoryId}) async {
     String endpoint = 'products/?';
     if (page != null) endpoint += 'page=$page&';
     if (search != null) endpoint += 'search=$search&';
@@ -288,6 +317,13 @@ class ApiService {
   // Order endpoints
   Future<List<dynamic>> getOrders() async {
     return await get('orders/');
+  }
+
+  Future<Map<String, dynamic>> getUserOrders({int? page, int? pageSize}) async {
+    String endpoint = 'orders/my-orders/?';
+    if (page != null) endpoint += 'page=$page&';
+    if (pageSize != null) endpoint += 'page_size=$pageSize&';
+    return await get(endpoint);
   }
 
   Future<Map<String, dynamic>> getOrderDetail(int id) async {

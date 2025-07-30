@@ -1,7 +1,10 @@
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.db.models import Q
 from .models import (
     Category, Product, ProductImage, Review, 
@@ -12,6 +15,109 @@ from .serializers import (
     ProductSerializer, ProductImageSerializer, ReviewSerializer,
     OrderSerializer
 )
+
+
+class RegisterView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
+        
+        if not username or not email or not password:
+            return Response(
+                {'error': 'Username, email, and password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {'error': 'Username already exists'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {'error': 'Email already exists'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
+            
+            # Create user profile
+            UserProfile.objects.create(user=user)
+            
+            serializer = UserSerializer(user)
+            return Response(
+                {'message': 'User created successfully', 'user': serializer.data}, 
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        if not username or not password:
+            return Response(
+                {'error': 'Username and password are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user = authenticate(username=username, password=password)
+        if user:
+            # Get or create token
+            token, created = Token.objects.get_or_create(user=user)
+            serializer = UserSerializer(user)
+            return Response(
+                {
+                    'message': 'Login successful', 
+                    'token': token.key,
+                    'user': serializer.data
+                }, 
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'error': 'Invalid credentials'}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            # Delete the user's token
+            request.user.auth_token.delete()
+            return Response(
+                {'message': 'Logout successful'}, 
+                status=status.HTTP_200_OK
+            )
+        except Token.DoesNotExist:
+            return Response(
+                {'message': 'No token found'}, 
+                status=status.HTTP_200_OK
+            )
 
 
 class UserViewSet(viewsets.ModelViewSet):

@@ -12,7 +12,7 @@ class OrderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM d, yyyy');
-    final formattedDate = dateFormat.format(order.createdAt);
+    final formattedDate = dateFormat.format(order.createdAt ?? DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
@@ -40,11 +40,11 @@ class OrderDetailScreen extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            Text(order.orderNumber),
+                            Text(order.orderNumber ?? 'N/A'),
                             IconButton(
                               icon: const Icon(Icons.copy, size: 16),
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(text: order.orderNumber));
+                                Clipboard.setData(ClipboardData(text: order.orderNumber ?? ''));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Order number copied to clipboard'),
@@ -78,7 +78,7 @@ class OrderDetailScreen extends StatelessWidget {
                           'Status:',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        _buildStatusBadge(order.orderStatus),
+                        _buildStatusBadge(order.orderStatus ?? order.status),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -89,7 +89,7 @@ class OrderDetailScreen extends StatelessWidget {
                           'Payment Status:',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        _buildPaymentStatusBadge(order.paymentStatus),
+                        _buildPaymentStatusBadge(order.paymentStatus ?? 'Pending'),
                       ],
                     ),
                   ],
@@ -195,11 +195,11 @@ class OrderDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(order.shippingAddress),
+                    Text(order.shippingAddress ?? 'No address provided'),
                     const SizedBox(height: 4),
                     Text('${order.city}, ${order.state} ${order.zipCode}'),
                     const SizedBox(height: 4),
-                    Text(order.country),
+                    Text(order.country ?? 'No country provided'),
                   ],
                 ),
               ),
@@ -224,7 +224,7 @@ class OrderDetailScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Payment Method:'),
-                        Text(order.paymentMethod),
+                        Text(order.paymentMethod ?? 'Not specified'),
                       ],
                     ),
                     const Divider(height: 24),
@@ -232,7 +232,7 @@ class OrderDetailScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Subtotal:'),
-                        Text('\$${order.totalAmount.toStringAsFixed(2)}'),
+                        Text('\$${(order.totalAmount ?? 0.0).toStringAsFixed(2)}'),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -263,7 +263,7 @@ class OrderDetailScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '\$${order.totalAmount.toStringAsFixed(2)}',
+                          '\$${(order.totalAmount ?? 0.0).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -278,7 +278,7 @@ class OrderDetailScreen extends StatelessWidget {
             ),
 
             // Documents
-            if (order.documents.isNotEmpty) ...[  
+            if (order.documents?.isNotEmpty ?? false) ...[  
               const Text(
                 'Documents',
                 style: TextStyle(
@@ -292,9 +292,9 @@ class OrderDetailScreen extends StatelessWidget {
                 child: ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: order.documents.length,
+                  itemCount: order.documents?.length ?? 0,
                   itemBuilder: (context, index) {
-                    final document = order.documents[index];
+                    final document = order.documents![index];
                     return ListTile(
                       leading: const Icon(Icons.description),
                       title: Text(document.name),

@@ -68,9 +68,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
       setState(() {
         _products.clear();
-        final results = response['results'] as List<dynamic>;
-        _products.addAll(results.map((json) => Product.fromJson(json)).toList());
-        _hasMoreProducts = response['next'] != null;
+        
+        // Handle both paginated and non-paginated responses
+        List<dynamic> productsList;
+        if (response is List) {
+          // Non-paginated response (flat array)
+          productsList = response;
+          _hasMoreProducts = false; // No pagination
+        } else if (response is Map<String, dynamic> && response.containsKey('results')) {
+          // Paginated response
+          productsList = response['results'] as List<dynamic>;
+          _hasMoreProducts = response['next'] != null;
+        } else {
+          // Handle unexpected response format
+          throw Exception('Unexpected API response format');
+        }
+        
+        _products.addAll(productsList.map((json) => Product.fromJson(json)).toList());
         _isLoading = false;
       });
     } catch (e) {
@@ -97,9 +111,22 @@ class _ProductListScreenState extends State<ProductListScreen> {
       );
 
       setState(() {
-        final results = response['results'] as List<dynamic>;
-        _products.addAll(results.map((json) => Product.fromJson(json)).toList());
-        _hasMoreProducts = response['next'] != null;
+        // Handle both paginated and non-paginated responses
+        List<dynamic> productsList;
+        if (response is List) {
+          // Non-paginated response (flat array)
+          productsList = response;
+          _hasMoreProducts = false; // No pagination
+        } else if (response is Map<String, dynamic> && response.containsKey('results')) {
+          // Paginated response
+          productsList = response['results'] as List<dynamic>;
+          _hasMoreProducts = response['next'] != null;
+        } else {
+          // Handle unexpected response format
+          throw Exception('Unexpected API response format');
+        }
+        
+        _products.addAll(productsList.map((json) => Product.fromJson(json)).toList());
         _isLoading = false;
       });
     } catch (e) {
@@ -122,6 +149,34 @@ class _ProductListScreenState extends State<ProductListScreen> {
         builder: (context) => ProductDetailScreen(product: product),
       ),
     ).then((_) => _refreshProducts());
+  }
+
+  int _getCrossAxisCount(double screenWidth) {
+    if (screenWidth >= 1200) {
+      return 5; // Desktop/large tablets
+    } else if (screenWidth >= 900) {
+      return 4; // Tablets
+    } else if (screenWidth >= 600) {
+      return 3; // Small tablets/large phones
+    } else if (screenWidth >= 400) {
+      return 2; // Standard phones
+    } else {
+      return 1; // Small phones
+    }
+  }
+
+  double _getChildAspectRatio(double screenWidth) {
+    if (screenWidth >= 1200) {
+      return 0.75; // Taller cards for desktop
+    } else if (screenWidth >= 900) {
+      return 0.72; // Tablets
+    } else if (screenWidth >= 600) {
+      return 0.7; // Small tablets
+    } else if (screenWidth >= 400) {
+      return 0.68; // Phones
+    } else {
+      return 0.65; // Small phones
+    }
   }
 
   @override
@@ -151,27 +206,37 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ? const Center(
                     child: Text('No products found'),
                   )
-                : GridView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.7,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: _products.length + (_isLoading && _hasMoreProducts ? 2 : 0),
-                    itemBuilder: (context, index) {
-                      if (index >= _products.length) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final screenWidth = constraints.maxWidth;
+                      final crossAxisCount = _getCrossAxisCount(screenWidth);
+                      final childAspectRatio = _getChildAspectRatio(screenWidth);
+                      
+                      return GridView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(
+                          screenWidth >= 600 ? 24 : 16,
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: childAspectRatio,
+                          crossAxisSpacing: screenWidth >= 600 ? 20 : 12,
+                          mainAxisSpacing: screenWidth >= 600 ? 20 : 12,
+                        ),
+                        itemCount: _products.length + (_isLoading && _hasMoreProducts ? crossAxisCount : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= _products.length) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
 
-                      final product = _products[index];
-                      return ProductCard(
-                        product: product,
-                        onTap: () => _navigateToProductDetail(product),
+                          final product = _products[index];
+                          return ProductCard(
+                            product: product,
+                            onTap: () => _navigateToProductDetail(product),
+                          );
+                        },
                       );
                     },
                   ),

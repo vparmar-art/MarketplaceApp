@@ -16,7 +16,9 @@ class User {
       id: json['id'],
       username: json['username'],
       email: json['email'],
-      dateJoined: DateTime.parse(json['date_joined']),
+      dateJoined: json['date_joined'] != null 
+          ? DateTime.parse(json['date_joined']) 
+          : DateTime.now(),
     );
   }
 

@@ -9,21 +9,26 @@ import 'utils/theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
-  runApp(const MyApp());
+  
+  // Initialize services before app start
+  final apiService = ApiService();
+  await apiService.init();
+  
+  runApp(MyApp(apiService: apiService));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ApiService apiService;
+  
+  const MyApp({super.key, required this.apiService});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<ApiService>(
-          create: (_) => ApiService(),
-        ),
+        ChangeNotifierProvider<ApiService>.value(value: apiService),
         ChangeNotifierProvider<AuthService>(
-          create: (_) => AuthService(),
+          create: (_) => AuthService(apiService),
         ),
       ],
       child: MaterialApp(

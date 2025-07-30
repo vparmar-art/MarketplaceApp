@@ -202,7 +202,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   Widget _buildOrderCard(Order order) {
     final dateFormat = DateFormat('MMM d, yyyy');
-    final formattedDate = dateFormat.format(order.createdAt);
+    final formattedDate = dateFormat.format(order.createdAt ?? DateTime.now());
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -230,7 +230,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       fontSize: 16,
                     ),
                   ),
-                  _buildStatusBadge(order.orderStatus),
+                  _buildStatusBadge(order.formattedStatus),
                 ],
               ),
               const SizedBox(height: 8),
@@ -321,7 +321,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '\$${order.totalAmount.toStringAsFixed(2)}',
+                    '\$${order.calculatedTotalAmount?.toStringAsFixed(2) ?? '0.00'}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryColor,

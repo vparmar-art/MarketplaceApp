@@ -182,11 +182,11 @@ class Order {
 
   double get total => items.fold(0, (sum, item) => sum + item.total);
   
-  double get totalAmount => total;
+  double get calculatedTotalAmount => total;
   
-  String get orderStatus => status;
+  String get formattedStatus => status;
   
-  String get paymentMethod => this.paymentMethod ?? 'Not specified';
+  String get formattedPaymentMethod => paymentMethod ?? 'Not specified';
 
   String get formattedShippingAddress {
     final parts = [

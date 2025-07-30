@@ -43,7 +43,7 @@ class ReviewCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             RatingBarIndicator(
-              rating: review.rating,
+              rating: review.rating.toDouble(),
               itemBuilder: (context, index) => const Icon(
                 Icons.star,
                 color: AppTheme.accentColor,

@@ -62,11 +62,11 @@ class OrderSuccessScreen extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            Text(order.orderNumber),
+                            Text(order.orderNumber ?? 'N/A'),
                             IconButton(
                               icon: const Icon(Icons.copy, size: 16),
                               onPressed: () {
-                                Clipboard.setData(ClipboardData(text: order.orderNumber));
+                                Clipboard.setData(ClipboardData(text: order.orderNumber ?? ''));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Order number copied to clipboard'),

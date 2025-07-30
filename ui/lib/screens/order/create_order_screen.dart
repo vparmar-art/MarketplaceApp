@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/product.dart';
 import '../../models/order.dart';
+import '../../models/user.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/theme.dart';
@@ -42,11 +43,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     if (authService.userProfile != null) {
       setState(() {
-        _shippingAddress = authService.userProfile!.address ?? '';
-        _city = authService.userProfile!.city ?? '';
-        _state = authService.userProfile!.state ?? '';
-        _zipCode = authService.userProfile!.zipCode ?? '';
-        _country = authService.userProfile!.country ?? '';
+        _shippingAddress = authService.userProfile!['address'] ?? '';
+        _city = authService.userProfile!['city'] ?? '';
+        _state = authService.userProfile!['state'] ?? '';
+        _zipCode = authService.userProfile!['zip_code'] ?? '';
+        _country = authService.userProfile!['country'] ?? '';
       });
     }
   }
@@ -78,17 +79,17 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       final order = Order(
         id: 0, // Will be assigned by backend
         orderNumber: '', // Will be assigned by backend
-        user: authService.user!,
+        buyer: User.fromJson(authService.currentUser!),
+        status: 'Pending', // Initial status
         items: [orderItem],
         totalAmount: _totalPrice,
         shippingAddress: _shippingAddress,
-        city: _city,
-        state: _state,
-        zipCode: _zipCode,
-        country: _country,
+        shippingCity: _city,
+        shippingState: _state,
+        shippingCountry: _country,
+        shippingZipCode: _zipCode,
         paymentMethod: _paymentMethod,
         paymentStatus: 'Pending', // Initial status
-        orderStatus: 'Pending', // Initial status
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         documents: [],

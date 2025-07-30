@@ -19,12 +19,15 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Simulate loading time
-    await Future.delayed(const Duration(seconds: 2));
+    final authService = Provider.of<AuthService>(context, listen: false);
+    
+    // Ensure SharedPreferences is initialized and auth check is complete
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Wait for auth service to complete its check
+    await authService.waitForAuthCheck();
     
     if (!mounted) return;
-    
-    final authService = Provider.of<AuthService>(context, listen: false);
     
     // Navigate to the appropriate screen based on authentication status
     if (authService.isAuthenticated) {
