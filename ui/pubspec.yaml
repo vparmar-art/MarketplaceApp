@@ -56,8 +56,7 @@ dependencies:
   # SVG support
   flutter_svg: ^2.0.9
   
-  # Carousel for product images
-  carousel_slider: ^5.0.0
+  # Carousel for product images - removed as we now use single image
   
   # File picking
   file_picker: ^6.1.1

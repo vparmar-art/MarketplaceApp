@@ -139,28 +139,25 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Product Image
-                            if (widget.product.images.isNotEmpty)
-                              SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: Image.network(
-                                  widget.product.images.first.image,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
+                            SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: widget.product.image.isNotEmpty
+                                  ? Image.network(
+                                      widget.product.image,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(Icons.broken_image),
+                                        );
+                                      },
+                                    )
+                                  : Container(
                                       color: Colors.grey[300],
-                                      child: const Icon(Icons.broken_image),
-                                    );
-                                  },
-                                ),
-                              )
-                            else
-                              Container(
-                                width: 80,
-                                height: 80,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.image_not_supported),
-                              ),
+                                      child: const Icon(Icons.image_not_supported),
+                                    ),
+                            ),
                             const SizedBox(width: 16),
                             // Product Details
                             Expanded(

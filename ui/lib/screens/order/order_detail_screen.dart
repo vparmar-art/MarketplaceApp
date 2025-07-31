@@ -121,28 +121,25 @@ class OrderDetailScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Product Image
-                        if (item.product.images.isNotEmpty)
-                          SizedBox(
-                            width: 60,
-                            height: 60,
-                            child: Image.network(
-                              item.product.images.first.image,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
+                        SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: item.product.image.isNotEmpty
+                              ? Image.network(
+                                  item.product.image,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.broken_image),
+                                    );
+                                  },
+                                )
+                              : Container(
                                   color: Colors.grey[300],
-                                  child: const Icon(Icons.broken_image),
-                                );
-                              },
-                            ),
-                          )
-                        else
-                          Container(
-                            width: 60,
-                            height: 60,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image_not_supported),
-                          ),
+                                  child: const Icon(Icons.image_not_supported),
+                                ),
+                        ),
                         const SizedBox(width: 16),
                         // Product Details
                         Expanded(

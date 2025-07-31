@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -180,6 +181,7 @@ class ApiService extends ChangeNotifier {
   // Handle API response
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      
       if (response.body.isEmpty) return {};
       return json.decode(response.body);
     } else {
@@ -207,7 +209,9 @@ class ApiService extends ChangeNotifier {
 
   // Handle general errors
   void _handleError(dynamic error) {
-    // Handle error silently in production
+    if (kDebugMode) {
+      
+    }
   }
 
   // Authentication endpoints
@@ -261,7 +265,19 @@ class ApiService extends ChangeNotifier {
 
   // Category endpoints
   Future<List<dynamic>> getCategories() async {
-    return await get('categories/');
+    final response = await get('categories/');
+    
+    // Handle both paginated and non-paginated responses
+    if (response is List) {
+      // Non-paginated response (flat array)
+      return response;
+    } else if (response is Map<String, dynamic> && response.containsKey('results')) {
+      // Paginated response
+      return response['results'] as List<dynamic>;
+    } else {
+      // Handle unexpected response format
+      throw Exception('Unexpected API response format for categories');
+    }
   }
 
   Future<Map<String, dynamic>> getCategoryDetail(int id) async {
@@ -304,7 +320,19 @@ class ApiService extends ChangeNotifier {
 
   // Review endpoints
   Future<List<dynamic>> getProductReviews(int productId) async {
-    return await get('products/$productId/reviews/');
+    final response = await get('products/$productId/reviews/');
+    
+    // Handle both paginated and non-paginated responses
+    if (response is List) {
+      // Non-paginated response (flat array)
+      return response;
+    } else if (response is Map<String, dynamic> && response.containsKey('results')) {
+      // Paginated response
+      return response['results'] as List<dynamic>;
+    } else {
+      // Handle unexpected response format
+      throw Exception('Unexpected API response format for product reviews');
+    }
   }
 
   Future<Map<String, dynamic>> createReview(int productId, int rating, String comment) async {
@@ -316,7 +344,19 @@ class ApiService extends ChangeNotifier {
 
   // Order endpoints
   Future<List<dynamic>> getOrders() async {
-    return await get('orders/');
+    final response = await get('orders/');
+    
+    // Handle both paginated and non-paginated responses
+    if (response is List) {
+      // Non-paginated response (flat array)
+      return response;
+    } else if (response is Map<String, dynamic> && response.containsKey('results')) {
+      // Paginated response
+      return response['results'] as List<dynamic>;
+    } else {
+      // Handle unexpected response format
+      throw Exception('Unexpected API response format for orders');
+    }
   }
 
   Future<Map<String, dynamic>> getUserOrders({int? page, int? pageSize}) async {

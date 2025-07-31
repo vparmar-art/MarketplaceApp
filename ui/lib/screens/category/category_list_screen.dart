@@ -56,6 +56,34 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     );
   }
 
+  int _getCrossAxisCount(double screenWidth) {
+    if (screenWidth >= 1200) {
+      return 5; // Desktop/large tablets
+    } else if (screenWidth >= 900) {
+      return 4; // Tablets
+    } else if (screenWidth >= 600) {
+      return 3; // Small tablets/large phones
+    } else if (screenWidth >= 400) {
+      return 2; // Standard phones
+    } else {
+      return 1; // Small phones
+    }
+  }
+
+  double _getChildAspectRatio(double screenWidth) {
+    if (screenWidth >= 1200) {
+      return 0.75; // Taller cards for desktop
+    } else if (screenWidth >= 900) {
+      return 0.72; // Tablets
+    } else if (screenWidth >= 600) {
+      return 0.7; // Small tablets
+    } else if (screenWidth >= 400) {
+      return 0.68; // Phones
+    } else {
+      return 0.65; // Small phones
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,18 +116,28 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                       ? const Center(
                           child: Text('No categories found'),
                         )
-                      : GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 1.0,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                          ),
-                          itemCount: _categories.length,
-                          itemBuilder: (context, index) {
-                            final category = _categories[index];
-                            return _buildCategoryCard(category);
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            final screenWidth = constraints.maxWidth;
+                            final crossAxisCount = _getCrossAxisCount(screenWidth);
+                            final childAspectRatio = _getChildAspectRatio(screenWidth);
+                            
+                            return GridView.builder(
+                              padding: EdgeInsets.all(
+                                screenWidth >= 600 ? 24 : 16,
+                              ),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                childAspectRatio: childAspectRatio,
+                                crossAxisSpacing: screenWidth >= 600 ? 20 : 12,
+                                mainAxisSpacing: screenWidth >= 600 ? 20 : 12,
+                              ),
+                              itemCount: _categories.length,
+                              itemBuilder: (context, index) {
+                                final category = _categories[index];
+                                return _buildCategoryCard(category);
+                              },
+                            );
                           },
                         ),
                 ),
@@ -107,61 +145,87 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   }
 
   Widget _buildCategoryCard(Category category) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: InkWell(
-        onTap: () => _navigateToProductList(category),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Category Image or Placeholder
-            if (category.image != null && category.image!.isNotEmpty)
-              Image.network(
-                category.image!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
-                      Icons.category,
-                      size: 50,
-                      color: AppTheme.primaryColor,
-                    ),
-                  );
-                },
-              )
-            else
-              Container(
-                color: Colors.grey[200],
-                child: const Icon(
-                  Icons.category,
-                  size: 50,
-                  color: AppTheme.primaryColor,
+    return SizedBox(
+      height: 290,
+      child: Card(
+        clipBehavior: Clip.hardEdge,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _navigateToProductList(category),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Category Image
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: AspectRatio(
+                  aspectRatio: 1.2,
+                  child: category.image != null && category.image!.isNotEmpty
+                      ? Image.network(
+                          category.image!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[100],
+                              child: const Icon(
+                                Icons.category,
+                                size: 40,
+                                color: AppTheme.primaryColor,
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: Colors.grey[100],
+                          child: const Icon(
+                            Icons.category,
+                            size: 40,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
                 ),
               ),
-            // Category Name Overlay
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                color: Colors.black.withOpacity(0.7),
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                child: Text(
-                  category.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              // Category Details
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category Name
+                      Text(
+                        category.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      // Description
+                      if (category.description != null && category.description!.isNotEmpty)
+                        Text(
+                          category.description!,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

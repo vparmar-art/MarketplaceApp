@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
@@ -57,7 +59,7 @@ class CartService with ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error loading cart: $e');
+        
       }
     }
   }
@@ -69,7 +71,7 @@ class CartService with ChangeNotifier {
       await prefs.setString('cart', json.encode(data));
     } catch (e) {
       if (kDebugMode) {
-        print('Error saving cart: $e');
+        
       }
     }
   }

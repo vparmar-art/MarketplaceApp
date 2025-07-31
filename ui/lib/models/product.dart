@@ -32,37 +32,7 @@ class Category {
   }
 }
 
-class ProductImage {
-  final int id;
-  final int productId;
-  final String image;
-  final bool isMain;
-
-  ProductImage({
-    required this.id,
-    required this.productId,
-    required this.image,
-    required this.isMain,
-  });
-
-  factory ProductImage.fromJson(Map<String, dynamic> json) {
-    return ProductImage(
-      id: json['id'],
-      productId: json['product'],
-      image: json['image'],
-      isMain: json['is_main'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'product': productId,
-      'image': image,
-      'is_main': isMain,
-    };
-  }
-}
+// ProductImage class removed - using only the image field in Product model
 
 class ProductSpecification {
   final int id;
@@ -103,10 +73,10 @@ class Product {
   final double price;
   final int quantity;
   final Category category;
-  final User seller;
+  final User? seller;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<ProductImage> images;
+  final String image;
   final List<ProductSpecification> specifications;
   final double? averageRating;
   final int? reviewCount;
@@ -118,10 +88,10 @@ class Product {
     required this.price,
     required this.quantity,
     required this.category,
-    required this.seller,
+    this.seller,
     required this.createdAt,
     required this.updatedAt,
-    required this.images,
+    required this.image,
     required this.specifications,
     this.averageRating,
     this.reviewCount,
@@ -135,12 +105,10 @@ class Product {
       price: double.parse(json['price'].toString()),
       quantity: json['available_quantity'],
       category: Category.fromJson(json['category']),
-      seller: User.fromJson(json['seller']),
+      seller: json['seller'] != null ? User.fromJson(json['seller']) : null,
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
-      images: (json['images'] as List<dynamic>? ?? [])
-          .map((image) => ProductImage.fromJson(image))
-          .toList(),
+      image: json['image'] ?? '',
       specifications: (json['specifications'] as List<dynamic>? ?? [])
           .map((spec) => ProductSpecification.fromJson(spec))
           .toList(),
@@ -157,10 +125,10 @@ class Product {
       'price': price,
       'available_quantity': quantity,
       'category': category.toJson(),
-      'seller': seller.toJson(),
+      'seller': seller?.toJson(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
-      'images': images.map((image) => image.toJson()).toList(),
+      'image': image,
       'specifications': specifications.map((spec) => spec.toJson()).toList(),
       'average_rating': averageRating,
       'review_count': reviewCount,
@@ -168,16 +136,7 @@ class Product {
   }
 
   String get mainImageUrl {
-    final mainImage = images.firstWhere(
-      (image) => image.isMain,
-      orElse: () => images.isNotEmpty ? images.first : ProductImage(
-        id: 0,
-        productId: id,
-        image: '',
-        isMain: true,
-      ),
-    );
-    return mainImage.image;
+    return image.isNotEmpty ? image : 'https://via.placeholder.com/150';
   }
 
   Product copyWith({
@@ -190,7 +149,7 @@ class Product {
     User? seller,
     DateTime? createdAt,
     DateTime? updatedAt,
-    List<ProductImage>? images,
+    String? image,
     List<ProductSpecification>? specifications,
     double? averageRating,
     int? reviewCount,
@@ -205,7 +164,7 @@ class Product {
       seller: seller ?? this.seller,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      images: images ?? this.images,
+      image: image ?? this.image,
       specifications: specifications ?? this.specifications,
       averageRating: averageRating ?? this.averageRating,
       reviewCount: reviewCount ?? this.reviewCount,

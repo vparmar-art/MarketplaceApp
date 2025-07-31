@@ -229,13 +229,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Member since ${_formatDate(currentUser['date_joined'])}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
+                  if (currentUser['date_joined'] != null)
+                    Text(
+                      'Member since ${_formatDate(currentUser['date_joined'])}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -400,8 +401,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
   
-  String _formatDate(String dateString) {
-    final date = DateTime.parse(dateString);
-    return '${date.day}/${date.month}/${date.year}';
+  String _formatDate(String? dateString) {
+    if (dateString == null) return '';
+    
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return '';
+    }
   }
 }

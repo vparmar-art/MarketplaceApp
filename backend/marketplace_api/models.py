@@ -14,6 +14,7 @@ class Category(models.Model):
         return self.name
     
     class Meta:
+        ordering = ['-created_at']
         verbose_name_plural = 'Categories'
 
 
@@ -37,16 +38,12 @@ class Product(models.Model):
     
     def __str__(self):
         return self.name
-
-
-class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='products/')
-    is_primary = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return f"Image for {self.product.name}"
+    class Meta:
+        ordering = ['-created_at']
+
+
+# ProductImage model removed - using only the image field in Product model
 
 
 class ProductSpecification(models.Model):
@@ -108,6 +105,9 @@ class Order(models.Model):
     
     def __str__(self):
         return f"Order #{self.id} by {self.user.username}"
+    
+    class Meta:
+        ordering = ['-created_at']
 
 
 class OrderItem(models.Model):
@@ -118,6 +118,9 @@ class OrderItem(models.Model):
     
     def __str__(self):
         return f"{self.quantity} {self.product.unit} of {self.product.name} in Order #{self.order.id}"
+    
+    class Meta:
+        ordering = ['-id']
 
 
 class OrderDocument(models.Model):
@@ -139,6 +142,9 @@ class OrderDocument(models.Model):
     
     def __str__(self):
         return f"{self.get_document_type_display()} for Order #{self.order.id}"
+    
+    class Meta:
+        ordering = ['-uploaded_at']
 
 
 class UserProfile(models.Model):
@@ -163,3 +169,6 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return f"Profile for {self.user.username}"
+    
+    class Meta:
+        ordering = ['-id']

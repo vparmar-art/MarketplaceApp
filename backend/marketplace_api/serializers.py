@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import (
-    Category, Product, ProductImage, ProductSpecification, Review, 
+    Category, Product, ProductSpecification, Review, 
     Order, OrderItem, OrderDocument, UserProfile
 )
 
@@ -33,11 +33,7 @@ class CategorySerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
-class ProductImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductImage
-        fields = ['id', 'image', 'is_primary']
-        read_only_fields = ['id']
+# ProductImageSerializer removed - using only the image field in Product model
 
 
 class ProductSpecificationSerializer(serializers.ModelSerializer):
@@ -63,10 +59,19 @@ class ProductSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(),
         write_only=True
     )
-    images = ProductImageSerializer(many=True, read_only=True)
     specifications = ProductSpecificationSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, obj):
+        # Check if the image field has a file
+        if obj.image and hasattr(obj.image, 'url') and obj.image.name:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
     
     class Meta:
         model = Product
@@ -75,7 +80,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'price', 'minimum_order_quantity', 'available_quantity', 'unit',
             'country_of_origin', 'shipping_terms', 'lead_time', 'certifications',
             'image', 'is_active', 'created_at', 'updated_at',
-            'images', 'specifications', 'reviews', 'average_rating'
+            'specifications', 'reviews', 'average_rating'
         ]
         read_only_fields = ['id', 'seller', 'created_at', 'updated_at']
     

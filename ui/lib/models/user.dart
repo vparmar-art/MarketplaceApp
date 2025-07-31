@@ -2,13 +2,13 @@ class User {
   final int id;
   final String username;
   final String email;
-  final DateTime dateJoined;
+  final DateTime? dateJoined;
 
   User({
     required this.id,
     required this.username,
     required this.email,
-    required this.dateJoined,
+    this.dateJoined,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -18,7 +18,7 @@ class User {
       email: json['email'],
       dateJoined: json['date_joined'] != null 
           ? DateTime.parse(json['date_joined']) 
-          : DateTime.now(),
+          : null,
     );
   }
 
@@ -27,7 +27,7 @@ class User {
       'id': id,
       'username': username,
       'email': email,
-      'date_joined': dateJoined.toIso8601String(),
+      'date_joined': dateJoined?.toIso8601String(),
     };
   }
 }

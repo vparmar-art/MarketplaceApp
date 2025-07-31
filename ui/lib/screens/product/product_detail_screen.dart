@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 import '../../models/product.dart';
@@ -97,55 +96,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> with SingleTi
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product Images Carousel
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 300,
-                viewportFraction: 1.0,
-                enlargeCenterPage: false,
-                autoPlay: widget.product.images.length > 1,
-                autoPlayInterval: const Duration(seconds: 3),
+            Container(
+              height: 300,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
               ),
-              items: widget.product.images.isEmpty
-                  ? [
-                      Container(
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: Icon(Icons.image_not_supported, size: 50),
-                        ),
-                      )
-                    ]
-                  : widget.product.images.map((image) {
-                      return Builder(
-                        builder: (BuildContext context) {
-                          return Container(
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                            ),
-                            child: Image.network(
-                              image.image,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Center(
-                                  child: Icon(Icons.broken_image, size: 50),
-                                );
-                              },
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    }).toList(),
+              child: widget.product.image.isNotEmpty
+                  ? Image.network(
+                      widget.product.image,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.broken_image, size: 50),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                    )
+                  : const Center(
+                      child: Icon(Icons.image_not_supported, size: 50),
+                    ),
             ),
 
             // Product Info
@@ -214,7 +194,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> with SingleTi
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Seller: ${widget.product.seller.username}',
+                    'Seller: ${widget.product.seller?.username ?? 'N/A'}',
                     style: const TextStyle(
                       color: AppTheme.textSecondaryColor,
                     ),

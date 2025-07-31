@@ -96,7 +96,7 @@ class AuthService extends ChangeNotifier {
       return await login(username, password);
     } catch (e) {
       if (kDebugMode) {
-        print('Registration error: $e');
+        
       }
       return false;
     }
@@ -165,7 +165,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       if (kDebugMode) {
-        print('Error fetching user profile: $e');
+        
       }
     }
   }
@@ -177,7 +177,7 @@ class AuthService extends ChangeNotifier {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('Error updating profile: $e');
+        
       }
       return false;
     }

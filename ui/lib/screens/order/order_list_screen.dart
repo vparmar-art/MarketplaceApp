@@ -250,28 +250,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     child: Row(
                       children: [
                         // Product Image
-                        if (item.product.images.isNotEmpty)
-                          SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: Image.network(
-                              item.product.images.first.image,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
+                        SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: item.product.image.isNotEmpty
+                              ? Image.network(
+                                  item.product.image,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.broken_image, size: 24),
+                                    );
+                                  },
+                                )
+                              : Container(
                                   color: Colors.grey[300],
-                                  child: const Icon(Icons.broken_image, size: 24),
-                                );
-                              },
-                            ),
-                          )
-                        else
-                          Container(
-                            width: 50,
-                            height: 50,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image_not_supported, size: 24),
-                          ),
+                                  child: const Icon(Icons.image_not_supported, size: 24),
+                                ),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(

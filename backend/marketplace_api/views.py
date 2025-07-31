@@ -7,12 +7,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from .models import (
-    Category, Product, ProductImage, Review, 
+    Category, Product, Review, 
     Order, OrderItem, UserProfile
 )
 from .serializers import (
     UserSerializer, UserProfileSerializer, CategorySerializer,
-    ProductSerializer, ProductImageSerializer, ReviewSerializer,
+    ProductSerializer, ReviewSerializer,
     OrderSerializer
 )
 
@@ -169,7 +169,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ['price', 'created_at', 'name']
     
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True)
+        queryset = Product.objects.filter(is_active=True).order_by('-created_at')
         
         # Filter by category
         category_id = self.request.query_params.get('category')
@@ -274,6 +274,35 @@ class OrderViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['get'], url_path='my-orders')
+    def my_orders(self, request):
+        """Get orders for the current user with pagination"""
+        user = request.user
+        queryset = Order.objects.filter(user=user).order_by('-created_at')
+        
+        # Get pagination parameters
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 10))
+        
+        # Calculate pagination
+        start = (page - 1) * page_size
+        end = start + page_size
+        
+        # Get paginated data
+        orders = queryset[start:end]
+        total_count = queryset.count()
+        
+        # Serialize the data
+        serializer = self.get_serializer(orders, many=True)
+        
+        # Return paginated response
+        return Response({
+            'count': total_count,
+            'next': f'?page={page + 1}&page_size={page_size}' if end < total_count else None,
+            'previous': f'?page={page - 1}&page_size={page_size}' if page > 1 else None,
+            'results': serializer.data
+        })
     
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):

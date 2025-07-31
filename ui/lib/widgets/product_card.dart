@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/product.dart';
@@ -6,42 +7,50 @@ import '../screens/product/product_detail_screen.dart';
 class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback? onTap;
+  final String? uniqueId;
 
-  const ProductCard({super.key, required this.product, this.onTap});
+  const ProductCard({
+    super.key, 
+    required this.product, 
+    this.onTap,
+    this.uniqueId,
+  });
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isLargeScreen = screenWidth >= 600;
-    
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap ?? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailScreen(product: product),
-            ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image with Hero animation
-            Hero(
-              tag: 'product-${product.id}',
-              child: ClipRRect(
+    final isSmallScreen = screenWidth < 400;
+
+    return SizedBox(
+      height: isLargeScreen ? 310 : isSmallScreen ? 240 : 290,
+      child: Card(
+        clipBehavior: Clip.hardEdge,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap ?? () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailScreen(product: product),
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image
+              ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                 child: AspectRatio(
                   aspectRatio: 1.2,
-                  child: product.images.isNotEmpty
+                  child: product.image.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: product.images.first.image,
+                          imageUrl: product.image,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: Colors.grey[100],
@@ -68,112 +77,82 @@ class ProductCard extends StatelessWidget {
                         ),
                 ),
               ),
-            ),
-            // Product Details
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(isLargeScreen ? 16 : 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Category badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        product.category.name,
-                        style: TextStyle(
-                          fontSize: isLargeScreen ? 12 : 11,
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.w500,
+              // Product Details
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(isLargeScreen ? 12 : isSmallScreen ? 6 : 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category badge
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 4 : 6,
+                          vertical: isSmallScreen ? 2 : 3,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Product Name
-                    Text(
-                      product.title,
-                      style: TextStyle(
-                        fontSize: isLargeScreen ? 16 : 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Spacer(),
-                    // Price
-                    Text(
-                      '\$${product.price.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: isLargeScreen ? 18 : 16,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Available Quantity
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: isLargeScreen ? 14 : 12,
-                          color: Colors.grey[600],
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${product.quantity} in stock',
+                        child: Text(
+                          product.category.name,
                           style: TextStyle(
-                            fontSize: isLargeScreen ? 11 : 10,
-                            color: Colors.grey[600],
+                            fontSize: isSmallScreen ? 8 : 10,
+                            color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
-                    ),
-                    // Rating
-                    if ((product.averageRating ?? 0) > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              size: isLargeScreen ? 14 : 12,
-                              color: Colors.amber,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              (product.averageRating ?? 0).toStringAsFixed(1),
-                              style: TextStyle(
-                                fontSize: isLargeScreen ? 11 : 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '(${product.reviewCount})',
-                              style: TextStyle(
-                                fontSize: isLargeScreen ? 11 : 10,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 4),
+                      // Product Name
+                      Text(
+                        product.title,
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 10 : 12,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      // Price
+                      Text(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 12 : 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
-                  ],
+                      const SizedBox(height: 2),
+                      // Quantity
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            size: isSmallScreen ? 10 : 12,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 2),
+                          Expanded(
+                            child: Text(
+                              '${product.quantity} in stock',
+                              style: TextStyle(
+                                fontSize: isSmallScreen ? 8 : 10,
+                                color: Colors.grey[600],
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

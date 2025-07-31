@@ -167,15 +167,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   double _getChildAspectRatio(double screenWidth) {
     if (screenWidth >= 1200) {
-      return 0.75; // Taller cards for desktop
+      return 0.8; // Slightly taller for desktop
     } else if (screenWidth >= 900) {
-      return 0.72; // Tablets
+      return 0.75; // Tablets
     } else if (screenWidth >= 600) {
       return 0.7; // Small tablets
     } else if (screenWidth >= 400) {
-      return 0.68; // Phones
+      return 0.65; // Phones
     } else {
-      return 0.65; // Small phones
+      return 0.6; // Small phones - more compact
     }
   }
 
@@ -210,7 +210,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     builder: (context, constraints) {
                       final screenWidth = constraints.maxWidth;
                       final crossAxisCount = _getCrossAxisCount(screenWidth);
-                      final childAspectRatio = _getChildAspectRatio(screenWidth);
                       
                       return GridView.builder(
                         controller: _scrollController,
@@ -219,7 +218,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         ),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
-                          childAspectRatio: childAspectRatio,
+                          childAspectRatio: _getChildAspectRatio(screenWidth),
                           crossAxisSpacing: screenWidth >= 600 ? 20 : 12,
                           mainAxisSpacing: screenWidth >= 600 ? 20 : 12,
                         ),
@@ -234,6 +233,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           final product = _products[index];
                           return ProductCard(
                             product: product,
+                            uniqueId: index.toString(),
                             onTap: () => _navigateToProductDetail(product),
                           );
                         },

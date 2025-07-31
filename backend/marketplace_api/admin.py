@@ -1,13 +1,11 @@
 from django.contrib import admin
 from .models import (
-    Category, Product, ProductImage, ProductSpecification, Review, 
+    Category, Product, ProductSpecification, Review, 
     Order, OrderItem, OrderDocument, UserProfile
 )
 
 
-class ProductImageInline(admin.TabularInline):
-    model = ProductImage
-    extra = 1
+# ProductImageInline removed - using only the image field in Product model
 
 
 class ProductSpecificationInline(admin.TabularInline):
@@ -20,7 +18,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'seller', 'category', 'price', 'available_quantity', 'is_active', 'created_at')
     list_filter = ('is_active', 'category', 'created_at')
     search_fields = ('name', 'description', 'seller__username', 'category__name')
-    inlines = [ProductImageInline, ProductSpecificationInline]
+    inlines = [ProductSpecificationInline]
 
 
 class OrderItemInline(admin.TabularInline):

@@ -127,22 +127,22 @@ class Order {
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'],
-      orderNumber: json['order_number'],
-      buyer: User.fromJson(json['buyer']),
-      status: json['status'],
-      orderStatus: json['order_status'],
-      shippingAddress: json['shipping_address'],
-      shippingCity: json['shipping_city'],
-      shippingState: json['shipping_state'],
-      shippingCountry: json['shipping_country'],
-      shippingZipCode: json['shipping_zip_code'],
-      city: json['city'],
-      state: json['state'],
-      country: json['country'],
-      zipCode: json['zip_code'],
-      paymentMethod: json['payment_method'],
-      paymentStatus: json['payment_status'],
-      totalAmount: json['total_amount']?.toDouble(),
+      orderNumber: json['id'].toString(), // Use id as order number since backend doesn't have order_number
+      buyer: User.fromJson(json['user']), // Backend returns 'user' not 'buyer'
+      status: json['status'] ?? 'pending', // Add null safety
+      orderStatus: json['status'], // Use status as orderStatus
+      shippingAddress: json['shipping_address'] ?? '', // Backend field name
+      shippingCity: null, // Not in backend
+      shippingState: null, // Not in backend
+      shippingCountry: json['destination_country'] ?? '', // Backend field name
+      shippingZipCode: null, // Not in backend
+      city: null, // Not in backend
+      state: null, // Not in backend
+      country: json['destination_country'] ?? '', // Backend field name
+      zipCode: null, // Not in backend
+      paymentMethod: json['payment_terms'] ?? '', // Backend field name
+      paymentStatus: null, // Not in backend
+      totalAmount: json['total_amount']?.toDouble() ?? 0.0, // Add null safety
       createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
       items: (json['items'] as List<dynamic>? ?? [])
@@ -191,13 +191,10 @@ class Order {
   String get formattedShippingAddress {
     final parts = [
       shippingAddress,
-      shippingCity,
-      shippingState,
       shippingCountry,
-      shippingZipCode,
     ].where((part) => part != null && part.isNotEmpty).toList();
     
-    return parts.join(', ');
+    return parts.isNotEmpty ? parts.join(', ') : 'No address specified';
   }
 
   Order copyWith({
